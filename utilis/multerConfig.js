@@ -1,4 +1,10 @@
+require('dotenv').config({ path: './config.env' }); // specify path
+console.log('Cloudinary Key:', process.env.CLOUDINARY_API_KEY);
+console.log('Cloudinary Name:', process.env.CLOUDINARY_CLOUD_NAME);
+console.log('Cloudinary Secret:', process.env.CLOUDINARY_API_SECRET);
+
 const multer = require('multer');
+
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 
