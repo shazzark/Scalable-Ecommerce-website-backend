@@ -91,19 +91,19 @@ app.use((req, res, next) => {
 
 // ------------------- STATIC FILES & IMAGES -------------------
 // Serve images with proper headers
-// app.use(
-//   '/api/v1/img',
-//   express.static(path.join(__dirname, 'public/img'), {
-//     setHeaders: (res, filePath) => {
-//       res.setHeader('Access-Control-Allow-Origin', '*');
-//       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-//       res.setHeader('Cache-Control', 'public, max-age=31536000');
-//       if (process.env.NODE_ENV !== 'production') {
-//         console.log(`📸 Serving image: ${filePath}`);
-//       }
-//     },
-//   }),
-// );
+app.use(
+  '/api/v1/img',
+  express.static(path.join(__dirname, 'public/img'), {
+    setHeaders: (res, filePath) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`📸 Serving image: ${filePath}`);
+      }
+    },
+  }),
+);
 
 app.use(
   '/img',

@@ -98,10 +98,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   }
 
   // Map uploaded files to image URLs
-  const baseUrl = `${req.protocol}://${req.get('host')}`;
-  req.body.images = req.files.map(
-    (file) => `${baseUrl}/img/products/${file.filename}`,
-  );
+  req.body.images = req.files.map((file) => file.path);
 
   // Convert numbers
   if (req.body.price) req.body.price = Number(req.body.price);
