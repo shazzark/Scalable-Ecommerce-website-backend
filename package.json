@@ -4,9 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "start:prod": "cross-env NODE_ENV=production nodemon server.js",
-    "debug": "ndb server.js"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
