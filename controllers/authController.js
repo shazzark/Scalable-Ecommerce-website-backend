@@ -44,6 +44,25 @@ const createSendToken = (user, statusCode, req, res) => {
   });
 };
 
+// exports.signup = catchAsync(async (req, res, next) => {
+//   const newUser = await User.create({
+//     name: req.body.name,
+//     email: req.body.email,
+//     password: req.body.password,
+//     passwordConfirm: req.body.passwordConfirm,
+//   });
+
+//   try {
+//     const url = `${req.protocol}://${req.get('host')}/me`;
+//     await new Email(newUser, url).sendWelcome();
+//   } catch (emailError) {
+//     console.error('Failed to send welcome email:', emailError);
+//     // Don't fail signup if email fails - just log it
+//   }
+
+//   createSendToken(newUser, 201, req, res);
+// });
+
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -52,16 +71,40 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
 
+  // Optional: send welcome email
   try {
     const url = `${req.protocol}://${req.get('host')}/me`;
     await new Email(newUser, url).sendWelcome();
   } catch (emailError) {
     console.error('Failed to send welcome email:', emailError);
-    // Don't fail signup if email fails - just log it
   }
 
   createSendToken(newUser, 201, req, res);
 });
+
+// exports.login = catchAsync(async (req, res, next) => {
+//   const { email, password } = req.body;
+
+//   // 1) Check if email and password exist
+//   if (!email || !password) {
+//     return next(new AppError('Please provide email and password!', 400));
+//   }
+
+//   // 2) Check if user exists
+//   const user = await User.findOne({ email }).select('+password');
+//   if (!user) {
+//     return next(new AppError('Email does not exist', 404));
+//   }
+
+//   // 3) Check if password is correct
+//   const isCorrectPassword = await user.correctPassword(password, user.password);
+//   if (!isCorrectPassword) {
+//     return next(new AppError('Password is not correct', 401));
+//   }
+
+//   // 4) Everything ok — send token to client
+//   createSendToken(user, 200, req, res);
+// });
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
@@ -71,22 +114,21 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Please provide email and password!', 400));
   }
 
-  // 2) Check if user exists
+  // 2) Check if user exists & password is correct
   const user = await User.findOne({ email }).select('+password');
-  if (!user) {
-    return next(new AppError('Email does not exist', 404));
+
+  if (!user || !(await user.correctPassword(password, user.password))) {
+    return next(new AppError('Incorrect email or password', 401));
   }
 
-  // 3) Check if password is correct
-  const isCorrectPassword = await user.correctPassword(password, user.password);
-  if (!isCorrectPassword) {
-    return next(new AppError('Password is not correct', 401));
-  }
+  // 3) If everything ok, send token
+  const token = signToken(user._id);
 
-  // 4) Everything ok — send token to client
-  createSendToken(user, 200, req, res);
+  res.status(200).json({
+    status: 'success',
+    token,
+  });
 });
-
 exports.logout = (req, res) => {
   const isProduction = process.env.NODE_ENV === 'production';
   res.cookie('jwt', 'loggedout', {

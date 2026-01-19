@@ -64,22 +64,37 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash password before saving
-userSchema.pre('save', async function () {
+// userSchema.pre('save', async function () {
+//   // Only run if password was modified
+//   if (!this.isModified('password')) return;
+
+//   // Hash the password
+//   this.password = await bcrypt.hash(this.password, 12);
+
+//   // Delete passwordConfirm field
+//   this.passwordConfirm = undefined;
+//   // next();
+// });
+
+// // Update passwordChangedAt when password is modified
+// userSchema.pre('save', async function () {
+//   if (!this.isModified('password') || this.isNew) return;
+//   this.passwordChangedAt = Date.now() - 1000;
+// });
+
+// Merge both pre-save hooks into one
+userSchema.pre('save', async function (next) {
   // Only run if password was modified
-  if (!this.isModified('password')) return;
+  if (!this.isModified('password')) return next();
 
   // Hash the password
   this.password = await bcrypt.hash(this.password, 12);
-
-  // Delete passwordConfirm field
   this.passwordConfirm = undefined;
-  // next();
-});
 
-// Update passwordChangedAt when password is modified
-userSchema.pre('save', async function () {
-  if (!this.isModified('password') || this.isNew) return;
-  this.passwordChangedAt = Date.now() - 1000;
+  // Update passwordChangedAt (if not new)
+  if (!this.isNew) this.passwordChangedAt = Date.now() - 1000;
+
+  next();
 });
 
 // Query middleware to filter out inactive users
